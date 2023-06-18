@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #webcam-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+    
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+  <script src="https://unpkg.com/tone"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+</head>
+<body>
+  <div id="webcam-canvas"></div>
+
+  <div id="canvas-container">
+    <div id="piano-canvas"></div>
+    <video id="webcam-video"></video>
+    <script src="piano2.js"></script>
+  </div>
+
+
+
+
+
+
+
+
+
+  <script>
+    let notes = [60, 62, 64, 65, 67, 69, 71];
+    let osc;
+    let isNotePlaying = false;
+    let capture;
+    let detector;
+    let webcamCanvas;
+    let pianoCanvas;
+
+
+
+
+
+
+    async function setup() {
+      const maxWidth = window.innerWidth;
+      const maxHeight = window.innerHeight;
+
+      webcamCanvas = createCanvas(windowWidth, windowHeight);
+      webcamCanvas.parent('webcam-canvas');
+
+      capture = createCapture(VIDEO);
+      capture.size(windowWidth, windowHeight);
+      capture.hide();
+
+      
+
+      osc = new Tone.Synth().toDestination();
+
+      detector = await handpose.load();
+    }
+
+
+
+
+    function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+
+
+
+
+
+
+    function playNote(note, duration) {
+      osc.triggerAttackRelease(Tone.Midi(note).toFrequency(), duration);
+      isNotePlaying = true;
+
+      if (duration) {
+        setTimeout(function() {
+          osc.triggerRelease();
+          isNotePlaying = false;
+        }, duration * 1000 + 150);
+      }
+    }
+
+    async function draw() {
+      push();
+      translate(width, 0);
+      scale(-1, 1);
+
+      image(capture, 0, 0, width, height);
+
+      let w = width / notes.length;
+
+      for (let i = 0; i < notes.length; i++) {
+        let x = i * w;
+
+        if (mouseX > x && mouseX < x + w && mouseY > 0 && mouseY < height) {
+          if (!isNotePlaying) {
+            playNote(notes[i], 0.5);
+          }
+          fill(120, 144, 186); // blu grigiastro
+        } else {
+          fill(200); // altro colore di riempimento
+        }
+
+        rect(x, 0, w - 1, height - 1);
+      }
+
+
+
+
+
+
+      //Parte landmarks
+
+      if (detector) {
+  const predictions = await detector.estimateHands(capture.elt);
+
+  for (let i = 0; i < predictions.length; i++) {
+    const hand = predictions[i];
+    const landmarks = hand.landmarks;
+
+    for (let j = 0; j < landmarks.length; j++) {
+      if (j === 8 || j === 12 || j === 16 || j === 20) {
+        const [x, y, z] = landmarks[j];
+
+        noStroke();
+        fill(0); // Colore nero
+        ellipse(x, y, 20, 20);
+      }
+    }
+  }
+}
+
+
+    for (let j = 0; j < landmarks.length; j++) {
+      const [x, y, z] = landmarks[j];
+
+      noStroke();
+      fill(0); // Colore nero
+      ellipse(x, y, 10, 10);
+    }
+  }
+
+
+  
+
+
+    
+  </script>
+</body>
+</html>
