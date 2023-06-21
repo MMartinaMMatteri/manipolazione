@@ -52,7 +52,8 @@
 
     <script src="https://unpkg.com/@tensorflow/tfjs-core@3.7.0/dist/tf-core.min.js"></script>
     <script src="https://unpkg.com/@tensorflow/tfjs-backend-webgl@3.7.0/dist/tf-backend-webgl.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.0/dist/hand-pose-detection.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.0/dist/hand-pose-detection.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.min.js"></script>
     <script src="https://unpkg.com/tone"></script>
@@ -76,6 +77,7 @@
     </div>
 
     <script>
+        let objArray = [] 
         let capture;
         let detector;
         const canvas = document.getElementById('canvas');
@@ -84,6 +86,8 @@
         canvas.width = 640;
         canvas.height = 480;
 
+
+        
         async function setup() {
             createCanvas(window.innerWidth, ratio);
             capture = createCapture(VIDEO);
@@ -109,68 +113,29 @@
                     const mappedKeyY = map(k.y, 0, capture.height, 0, window.innerHeight)
                     ellipse(mappedKeyX, mappedKeyY, 50, 50)
 
-                    const choiceButtons = [
-                        {
-                            button: document.getElementById('square1'),
-                            left: 0,
-                            right: 100,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        },
-                        {
-                            button: document.getElementById('square2'),
-                            left: 120,
-                            right: 220,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        },
-                        {
-                            button: document.getElementById('square3'),
-                            left: 240,
-                            right: 340,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        },
-                        {
-                            button: document.getElementById('square4'),
-                            left: 360,
-                            right: 460,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        },
-                        {
-                            button: document.getElementById('square5'),
-                            left: 480,
-                            right: 580,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        },
-                        {
-                            button: document.getElementById('square6'),
-                            left: 600,
-                            right: 700,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        },
-                        {
-                            button: document.getElementById('square7'),
-                            left: 720,
-                            right: 820,
-                            top: window.innerHeight - 100,
-                            bottom: window.innerHeight
-                        }
-                    ];
 
-                    choiceButtons.forEach((choiceButtonObj, index) => {
-                          if (
-                            mappedKeyX > choiceButtonObj.left &&
-                            mappedKeyX < choiceButtonObj.right &&
-                            mappedKeyY > choiceButtonObj.top &&
-                            mappedKeyY < choiceButtonObj.bottom
+
+
+
+
+
+
+
+
+
+
+
+
+                    objArray.forEach((square) => {
+                        if (
+                            mappedKeyX > square.left &&
+                            mappedKeyX < square.right &&
+                            mappedKeyY > square.top &&
+                            mappedKeyY < square.bottom
                         ) {
-                            dispatchCustomEvent(choiceButtonObj.button, 'handEnter', choiceButtonObj)
+                            dispatchCustomEvent(square.button, 'handEnter', square)
                         } else {
-                            dispatchCustomEvent(choiceButtonObj.button, 'handLeave', choiceButtonObj)
+                            dispatchCustomEvent(square.button, 'handLeave', square)
                         }
                     });
                 }
@@ -285,6 +250,21 @@
                     isNotePlaying = false;
                 });
             }
+
+            squares.forEach((square) => {
+
+                const squareRect = square.getClientRects()[0];
+                const squareObj = {
+                    button: square,
+                    left: squareRect.left,
+                    right: squareRect.right,
+                    top: squareRect.top,
+                    bottom: squareRect.bottom
+                }
+                objArray.push(squareObj)
+
+            })
+
         }
 
         window.addEventListener('DOMContentLoaded', init);
