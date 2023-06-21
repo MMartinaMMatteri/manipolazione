@@ -47,7 +47,7 @@
             z-index: 1000;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
 
     <script src="https://unpkg.com/@tensorflow/tfjs-core@3.7.0/dist/tf-core.min.js"></script>
@@ -56,7 +56,7 @@
         src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.0/dist/hand-pose-detection.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.min.js"></script>
-    <script src="https://unpkg.com/tone"></script>
+    <!--<script src="https://unpkg.com/tone"></script>-->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
 </head>
@@ -77,17 +77,18 @@
     </div>
 
     <script>
-        let objArray = [] 
         let capture;
         let detector;
+
         const canvas = document.getElementById('canvas');
         const ratio = window.innerWidth / 16 * 9;
-        let squares = []
+
         canvas.width = 640;
         canvas.height = 480;
 
+        let squares = []
+        let objArray = []
 
-        
         async function setup() {
             createCanvas(window.innerWidth, ratio);
             capture = createCapture(VIDEO);
@@ -113,19 +114,6 @@
                     const mappedKeyY = map(k.y, 0, capture.height, 0, window.innerHeight)
                     ellipse(mappedKeyX, mappedKeyY, 50, 50)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
                     objArray.forEach((square) => {
                         if (
                             mappedKeyX > square.left &&
@@ -133,13 +121,17 @@
                             mappedKeyY > square.top &&
                             mappedKeyY < square.bottom
                         ) {
-                            dispatchCustomEvent(square.button, 'handEnter', square)
+                            dispatchCustomEvent(square.object, 'handEnter', square)
                         } else {
-                            dispatchCustomEvent(square.button, 'handLeave', square)
+                            dispatchCustomEvent(square.object, 'handLeave', square)
                         }
                     });
                 }
             }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
         }
 
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -173,7 +165,7 @@
                         ctx.restore();
                         requestAnimationFrame(drawVideo);
                     }
-                    detectHandLandmarks();
+                    //detectHandLandmarks();
                     drawVideo();
                 }).catch((error) => {
                     console.error('Si è verificato un errore durante il caricamento del modello Handpose:', error);
@@ -208,63 +200,31 @@
         function init() {
             initSynth();
 
-            squares = document.querySelectorAll('.square')
+            squares = document.querySelectorAll('.square');
             for (let i = 0; i < squares.length; i++) {
-                squares[i].addEventListener('handEnter', function (event) {
-                    playNoteOnHover(notes[i], 0.5);
+                    squares[i].addEventListener('handEnter', function (event) {
+                        playNoteOnHover(notes[i], 0.5);
+                        console.log(notes[i]);
+                        console.log(event.target);
+                    });
 
-                    switch (i) {
-                        case 0:
-                            playNoteOnHover(60, 0.5);
-                            break;
+                    squares[i].addEventListener('handLeave', function (event) {
+                        // Stop playing note
+                        osc.triggerRelease();
+                        isNotePlaying = false;
+                    });
 
-                        case 1:
-                            playNoteOnHover(62, 0.5);
-                            break;
+                    const squareRect = squares[i].getClientRects()[0];
+                    const squareObj = {
+                        object: squares[i],
+                        left: squareRect.left,
+                        right: squareRect.right,
+                        top: squareRect.top,
+                        bottom: squareRect.bottom,
+                    };
 
-                        case 2:
-                            playNoteOnHover(64, 0.5);
-                            break;
-
-                        case 3:
-                            playNoteOnHover(65, 0.5);
-                            break;
-
-                        case 4:
-                            playNoteOnHover(67, 0.5);
-                            break;
-
-                        case 5:
-                            playNoteOnHover(69, 0.5);
-                            break;
-
-                        case 6:
-                            playNoteOnHover(71, 0.5);
-                            break;
-                    }
-                });
-
-                squares[i].addEventListener('handLeave', function (event) {
-                    // Stop playing note
-                    osc.triggerRelease();
-                    isNotePlaying = false;
-                });
+                    objArray.push(squareObj);
             }
-
-            squares.forEach((square) => {
-
-                const squareRect = square.getClientRects()[0];
-                const squareObj = {
-                    button: square,
-                    left: squareRect.left,
-                    right: squareRect.right,
-                    top: squareRect.top,
-                    bottom: squareRect.bottom
-                }
-                objArray.push(squareObj)
-
-            })
-
         }
 
         window.addEventListener('DOMContentLoaded', init);
