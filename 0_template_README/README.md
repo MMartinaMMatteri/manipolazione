@@ -26,6 +26,15 @@ La pagina web appare come una grande schermata fullscrean dove spiccano tre elem
 
 
 
+https://github.com/MMartinaMMatteri/manipolazione/assets/127389607/a9c6f7dc-0d82-4a35-84bf-d7c42294bc7d
+
+
+
+
+
+
+
+
 ## Tecnologia usata
 Questo progetto è stato una bella sfida a livello tecnico di scrittura del codice. In base alle mie conoscenze ho dovuto confrontarmi ocn errori nuovi, circostanze nuove che in alcuni momenti non comprendevo appieno e credo che la parte focale del progetto sia stato proprio il punto di unione in cui tutto quello che era presente ha iniziato a funzionare insieme. Di seguito un piccolo estratto del codice che evidenzia la parte dell'assegnazione delle note ai vari quadrati: 
 
